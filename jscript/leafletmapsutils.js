@@ -12,14 +12,14 @@ var dataFileName          = "mapcontent.geojson",
 	maxZoom               = 2,
 	magneticDeviation     = 3, //-11.5189,
 	zoomCoef              = ( maxZoom > 1 ) ? Math.pow( 2, maxZoom - 2 ) : 1,
-	redDot                = L.icon({ iconUrl: imageFolder + 'bullet_red.png'   , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]}),
-	whiteDot              = L.icon({ iconUrl: imageFolder + 'bullet_white.png' , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]}),
-	yellowDot             = L.icon({ iconUrl: imageFolder + 'bullet_yellow.png', iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]}),
-	blueDot               = L.icon({ iconUrl: imageFolder + 'bullet_blue.png'  , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]}),
+	redDot                = new L.icon({ iconUrl: imageFolder + 'bullet_red.png'   , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]}),
+	whiteDot              = new L.icon({ iconUrl: imageFolder + 'bullet_white.png' , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]}),
+	yellowDot             = new L.icon({ iconUrl: imageFolder + 'bullet_yellow.png', iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]}),
+	blueDot               = new L.icon({ iconUrl: imageFolder + 'bullet_blue.png'  , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]}),
 	//blueFlag            = L.icon({ iconUrl: imageFolder + 'flag_2.png'       , iconSize: [16, 16], iconAnchor: [0, 16],popupAnchor: [0, 16]}),
 	//redFlag             = L.icon({ iconUrl: imageFolder + 'flag_3.png'       , iconSize: [16, 16], iconAnchor: [0, 16],popupAnchor: [0, 16]}),
-	blueFlag              = L.icon({ iconUrl: imageFolder + 'pin_149059.png'   , iconSize: [32, 32], iconAnchor: [16, 32],popupAnchor: [16, 32]}),
-	redFlag               = L.icon({ iconUrl: imageFolder + 'pin_660624.png'   , iconSize: [32, 32], iconAnchor: [16, 32],popupAnchor: [16, 32]}),
+	blueFlag              = new L.icon({ iconUrl: imageFolder + 'pin_149059.png'   , iconSize: [32, 32], iconAnchor: [16, 32],popupAnchor: [16, 32]}),
+	redFlag               = new L.icon({ iconUrl: imageFolder + 'pin_660624.png'   , iconSize: [32, 32], iconAnchor: [16, 32],popupAnchor: [16, 32]}),
 	rulerStyle            = { weight: 4, color: '#ff3300', opacity: 1 },
 	azimuthStyle          = { weight: 4, color: '#0066cc', opacity: 1 },
 	polylineStyle         = { weight: 3, color: '#FF5555', opacity: .9, interactive: false },
@@ -1024,9 +1024,7 @@ $(".openMapLoader").click(function() {
 		dataType      : "json",
 		success       : function(data) {
 			$(".schemaList").empty();
-			for (a in data) {
-				$(".schemaList").append('<div class="loadMap" filename="' + data[a] + '">' + data[a] + '</div>')
-			}
+			makeFileList(data, className);
 			$(".mapfiles").removeClass("hide");
 			$(".loadMap").unbind().click(function() {
 				var dataFile = ($(this).attr("filename") === undefined) ? dataFileName : $(this).attr("filename");
@@ -1040,6 +1038,12 @@ $(".openMapLoader").click(function() {
 	});
 });
 
+function makeFileList(data, className) {
+	for (a in data) {
+		$(".schemaList").append('<div class="' + className + '" filename="' + data[a] + '">' + data[a] + '</div>')
+	}
+}
+
 $(".openMapSaver").click(function() {
 		$.ajax({
 		url           : "listfiles.php",
@@ -1048,9 +1052,7 @@ $(".openMapSaver").click(function() {
 		dataType      : "json",
 		success       : function(data) {
 			$(".schemaList").empty();
-			for (a in data) {
-				$(".schemaList").append('<div class="saveMe" filename="' + data[a] + '">' + data[a] + '</div>')
-			}
+			makeFileList(data, className);
 			$(".saveMe").click(function(){
 				$("#saveFilename").val($(this).attr("filename"));
 			});
