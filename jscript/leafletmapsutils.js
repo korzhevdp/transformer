@@ -958,22 +958,24 @@ $(".clearMarkers").click(function() {
 	clearCollections();
 });
 
+function switchActiveness(targetNode) {
+	$(".azimuthMode, .rulerMode, .anchorPointMode").removeClass("active");
+	$(targetNode).addClass("active");
+}
+
 $(".azimuthMode").click(function() {
 	techMode = "azimuth";
-	$(".azimuthMode, .rulerMode, .anchorPointMode").removeClass("active");
-	$(this).addClass("active");
+	switchActiveness($(this));
 });
 
 $(".rulerMode").click(function() {
 	techMode = "scaleRuler";
-	$(".azimuthMode, .rulerMode, .anchorPointMode").removeClass("active");
-	$(this).addClass("active");
+	switchActiveness($(this));
 });
 
 $(".anchorPointMode").click(function() {
 	techMode = "anchorPoint";
-	$(".azimuthMode, .rulerMode, .anchorPointMode").removeClass("active");
-	$(this).addClass("active");
+	switchActiveness($(this));
 });
 
 $("#MD").change(function() {
