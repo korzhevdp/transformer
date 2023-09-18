@@ -1,0 +1,396 @@
+body{
+	font-family:Tahoma;
+	font-size:1em;
+	padding:0;
+	margin:0;
+}
+
+h5{
+	font-size:12px;
+	font-weight:bold;
+	color:#747474;
+	margin:2px;
+}
+.nav{
+	width: 290px;;
+	height:100%;
+	background-color:#EEEEEE;
+	overflow-y: scroll;
+	padding:4px;
+}
+
+.navItem {
+	font-size        : .9em;
+	padding          : 3px;
+	margin-bottom    : 3px;
+	height           : 25px;
+	overflow         : hidden;
+	width            : 263px;
+	border           : 2px solid #E0E0E0;
+	border-radius    : 4px;
+	clear            : both;
+	cursor           : pointer;
+	color            : #444444;
+	background-color : #EEEEEE;
+}
+.navItem:hover{
+	border           : 2px solid #999999;
+	background-color : #FAFAFA;
+	color            : #000000;
+	transition       : background-color 500ms ease;
+}
+
+.active {
+	background-color : #ffcccc;
+}
+
+table.main {
+	height           : 900px;
+	width            : 100%;
+	--border-collapse  : collapse;
+}
+table.main td{
+	border          : 1px solid #000;
+	border-collapse  : collapse;
+}
+
+#LMapsID,
+#LMapsID2 {
+	border          : 1px solid #000;
+	cursor           : crosshair;
+
+}
+
+table.form{
+	height           : 400px;
+	width            : 100%;
+	border-collapse  : collapse;
+	font-size        : 1.2em;
+}
+
+table.form td.col1{
+	width:150px;
+}
+
+table.form textarea{
+	height:300px;
+	width:100%;
+	border: 2px solid #AAAAAA;
+	font-size:1.2em;
+	border-radius: 4px;
+}
+
+table.form input[type=text]{
+	width:100%;
+	border: 2px solid #AAAAAA;
+	font-size:1.2em;
+	border-radius: 4px;
+}
+
+#resetMeasurer {
+	background-color:#eeeeee;
+	border:2px solid #bfbfbf;
+	border-radius: 2px;
+	text-align:center;
+	padding:6px;
+	margin:6px;
+	cursor:pointer;
+
+}
+#resetMeasurer:hover{
+	background-color:#f6f6f6;
+}
+
+#measureResult{
+	height:45px;
+	width:100%;
+	--border: 1px solid red;
+	text-align:center;
+	font-size: 32px;
+	font-weight:bold;
+}
+
+.legendTable {
+	font-size: .7em;
+	border:none;
+	border-spacing: 4px;
+	--border-collapse: collapse;
+	width:290px;
+	margin:4px;
+}
+.legendTable td.col1{
+	width: 45px;
+}
+
+.legendTable td.col2{
+	width: 5px;
+}
+
+.legendTable td.col3{
+
+}
+
+td.dashboard{
+	vertical-align:top;
+	width:300px;
+}
+#filter {
+	width:280px;
+	margin-left:5px;
+	height: 24px;
+	padding:4px;
+	font-size:18px;
+	color: #444444;
+	border-radius:6px;
+	margin-bottom:3px;
+	border: 2px solid #999999;
+}
+
+.controlPanel{
+	width: 300px;
+	height: 500px;
+	background-color:#EEEEEE;
+
+	-webkit-user-select: none; /* Safari */
+	-ms-user-select: none; /* IE 10+ */
+	user-select: none;
+
+}
+
+.controlPanel > .data {
+	overflow: auto;
+	height: 370px;
+	margin-bottom:15px;
+}
+
+.controlPanel .header {
+	background-color: #bbbbbb;
+	font-weight: bold;
+	padding:4px;
+	margin-top: -12px;
+}
+
+.markerItem{
+	border: 1px solid #dddddd;
+	font-size: .8em;
+	padding:4px;
+	cursor:pointer;
+}
+.markerItem:hover{
+	background-color:#d6d6d6;
+}
+.markerItem img {
+	height:16px;
+}
+.clearMarkers,
+.closeMapLoader {
+	cursor:pointer;
+}
+.controls{
+	height:38px;
+	padding:4px;
+}
+
+.controlItem {
+	width:30px;
+	height:30px;
+	line-height:30px;
+	border: 1px solid #aaaaaa;
+	text-align:center;
+	margin-right: 5px;
+	display:inline-block;
+	cursor:pointer;
+}
+.controlItem:hover {
+	background-color:#CCCCCC;
+}
+.controlItem img {
+	width:16px;
+	height:16px;
+}
+.controlItem.active {
+	border: 1px solid #444444;
+}
+.markerItem .saveFeature,
+.markerItem .deleteFeature,
+.markerItem .editFeature {
+	border: 1px solid #999;
+	width: 16px;
+	height: 16px;
+	font-size: 12px;
+	line-height: 16px;
+	display: inline-block;
+	text-align:center;
+	color: #ffff66;
+	margin-right:4px;
+	cursor:pointer;
+	float: right;
+}
+.markerItem .deleteFeature {
+	background-color:#ff3333;
+}
+.markerItem .editFeature {
+	background-color:#0033ff;
+}
+.markerItem .saveFeature {
+	background-color:#336633;
+}
+.rulerMode,
+.azimuthMode,
+.anchorPointMode {
+	border        : 1px solid #999;
+	width         : 32px;
+	height        : 24px;
+	font-size     : 16px;
+	line-height   : 24px;
+	display       : inline-block;
+	text-align    : center;
+	color         : #000000;
+	margin-right  : 5px;
+	cursor        : pointer;
+	float         : left;
+	border-radius : 4px;
+	margin-bottom : 15px;
+}
+.rulerMode.active {
+	background-color:#ff3300;
+	color: #ffff66;
+}
+
+.azimuthMode.active {
+	background-color:#0066cc;
+	color: #ffff66;
+}
+.anchorPointMode.active {
+	background-color:#009900;
+	color: #ffff66;
+}
+.openMapLoader,
+.openMapSaver{
+	display: inline-block;
+	width: 120px;
+	padding: 4px;
+	border: 1px solid #999999;
+	margin-left: 5px;
+	border-radius: 6px;
+	text-align:center;
+	cursor:pointer;
+}
+.techModeSwitchers{
+	clear:both;
+	height: 40px;
+}
+.rulers{
+	padding: 5px;
+	font-size:.8em;
+}
+.rulers .header {
+	margin-top: 10px;
+	margin-bottom: 5px;
+	padding: 5px;
+	font-weight:bold;
+	font-size:.9em;
+}
+.rulerPanel{
+	clear:both;
+	line-height:1.5em;
+	border-spacing:0;
+	border-collapse: collapse;
+	width:100%;
+	border:0;
+}
+.rulerPanel td{
+	border:0px solid black !important;
+}
+.hide{
+	display:none !important;
+}
+.openMapLoader:hover,
+.openMapSaver:hover{
+	background-color:#dddddd;
+}
+#inScaleUnits {
+	width:50px;
+}
+.resetSR,
+.resetAZ,
+.resetAP {
+	cursor:pointer;
+}
+.label-C {
+	display: inline-block;
+	padding: 3px;
+	width:60px !important;
+	margin-top: 3px !important;
+	text-align:center;
+	text-shadow:
+	-1px -1px 2px #fff,
+	 0   -1px 2px #fff,
+	 1px -1px 2px #fff,
+	 1px  0   2px #fff,
+	 1px  1px 2px #fff,
+	 0    1px 2px #fff,
+	-1px  1px 2px #fff,
+	-1px  0   2px #fff,
+	 1px  1px 2px #fff,
+	 0    1px 2px #fff,
+	-1px  0   2px #fff;
+	-1px  1px 2px #fff,
+}
+
+.mapfiles,
+.saveMapFiles{
+	display: block;
+	position:absolute;
+	top: calc(50% - 150px);
+	left: calc(50% - 250px);
+	width:500px;
+	height:300px;
+	background-color:#eeeeee;
+	border: 3px solid #444444;
+	font-size: 1em;
+	z-index:10000;
+	border-radius:10px;
+	overflow-y: auto;
+	overflow-x: hidden;
+
+}
+.saveMapFiles .header,
+.mapfiles .header {
+	background-color:#dddddd;
+	font-weight:bold;
+	border-radius: 10px 10px 0 0;
+	padding: 5px;
+}
+.schemaList div {
+	height: 1em;
+	padding: 4px;
+	width:100%;
+	border: 1px solid #bbbbbb;
+	cursor:pointer;
+}
+.schemaList div:hover {
+	background-color:#cccccc;
+}
+.saveMap{
+	display:inline-block;
+	cursor:pointer;
+	border: 1px solid #aaaaaa;
+	width: 140px;
+	height:26px;
+	line-height:26px;
+	border-radius:6px;
+	text-align:center;
+}
+.saveMap:hover{
+	background-color:#ddd;
+}
+#saveFilename{
+	margin:4px 10px;
+	height: 26px;
+	font-size: 16px;
+	line-height:26px;
+}
+input.featureName {
+	width: 130px;
+}
