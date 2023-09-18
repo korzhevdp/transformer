@@ -644,8 +644,7 @@ function redrawDrawings() {
 			}
 			scaleRulerPixelLength = Math.round(
 				Math.sqrt(
-					Math.pow(scaleRuler.options.locals[0][0] - scaleRuler.options.locals[1][0], 2) +
-					Math.pow(scaleRuler.options.locals[0][1] - scaleRuler.options.locals[1][1], 2)
+					Math.pow(scaleRuler.options.locals[0][0] - scaleRuler.options.locals[1][0], 2) + Math.pow(scaleRuler.options.locals[0][1] - scaleRuler.options.locals[1][1], 2)
 				)
 			);
 			$(".scaleRulerPixelLength").val(scaleRulerPixelLength);
