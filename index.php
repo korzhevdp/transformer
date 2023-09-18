@@ -6,7 +6,7 @@
 		<meta name="viewport" content="width=device-width,initial-scale=1">
 		<meta property="vk:image" content="<?=$siteURL;?>images/1780.JPG">
 		<meta property="og:title" content="Признак эпохи">
-		<title></title>
+		<title>Transformer</title>
 		<link rel="stylesheet" href="<?=$siteURL;?>css/leaflet.css">
 		<link rel="stylesheet" href="<?=$siteURL;?>css/map.css">
 		<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="<?=$siteURL;?>favicon/apple-touch-icon.png">
@@ -167,7 +167,8 @@
 
 			var imgNativeWidth        = <?=$matches[1];?>,
 				imgNativeHeight       = <?=$matches[2];?>,
-				imageURL              = "<?=$siteURL;?>plans/<?=$fileName;?>";
+				imageURL              = "<?=$siteURL;?>plans/<?=$fileName;?>",
+				imageFolder           = "<?=$siteURL;?>images/";
 		</script>
 
 		<script type="text/javascript" src="<?=$siteURL;?>jscript/jquery.js"></script>
