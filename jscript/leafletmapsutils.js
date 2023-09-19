@@ -395,69 +395,36 @@ function abPixelDistance( aPoint, bPoint ) {
 	);
 }
 
-getMenuItem = {
-	marker : function ( layerID, options ) {
-		return '<div class="markerItem" collection="markers" layerID="' + layerID + '">' +
-		'<img src="' + imageFolder + 'bullet_red.png"> #' + layerID + " "+
-		'<input type="text" collection="markers" layerID="' + layerID + '" class="featureName" value="' + ((options.name ===undefined ) ? emptyName : options.name) + '">' +
-		'<span collection="markers" layerID="' + layerID + '" class="saveFeature"   title="Завершить редактирование">S</span>' +
-		'<span collection="markers" layerID="' + layerID + '" class="deleteFeature" title="Удалить объект">D</span>' +
-		'</div>';
-	},
-	polyline : function ( layerID, options, active ) {
-		return '<div class="markerItem' + active + '" collection="polylines" layerID="' + layerID + '">' +
-		'<img src="' + imageFolder + 'layer-shape-polyline.png"> #' + layerID + " " +
-		'<input type="text" collection="polylines" layerID="' + layerID + '" class="featureName" value="' + ((options.name === undefined) ? emptyName : options.name) + '">' +
-		'<span collection="polylines" class="saveFeature"   title="Завершить редактирование" layerID="' + layerID + '">S</span>' +
-		'<span collection="polylines" class="editFeature"   title="Редактировать объект" layerID="' + layerID + '">E</span>' +
-		'<span collection="polylines" class="deleteFeature" title="Удалить объект" layerID="' + layerID + '">D</span>' +
-		'</div>';
-	},
-	polygon : function ( layerID, options, active ) {
-		return '<div class="markerItem' + active + '" collection="polygons" layerID="' + layerID + '">' +
-		'<img src="' + imageFolder + 'layer-shape-polygon.png"> #' + layerID + " "+
-		'<input type="text" collection="polygons" layerID="' + layerID + '" class="featureName" value="' + ((options.name === undefined) ? emptyName : options.name) + '">' +
-		'<span collection="polygons" class="saveFeature"   title="Завершить редактирование" layerID="' + layerID + '">S</span>' +
-		'<span collection="polygons" class="editFeature"   title="Редактировать объект" layerID="' + layerID + '">E</span>' +
-		'<span collection="polygons" class="deleteFeature" title="Удалить объект" layerID="' + layerID + '">D</span>'+
-		'</div>';
-	},
-	circle : function ( layerID, options, active ) {
-		return  '<div class="markerItem' + active + '" collection="circles" layerID="' + layerID + '">' +
-		'<img src="' + imageFolder + 'layer-shape-ellipse.png"> #' + layerID + " "+
-		'<input type="text" collection="circles" layerID="' + layerID + '" class="featureName" value="' + ((options.name === undefined) ? emptyName : options.name) + '">' +
-		'<span collection="circles" class="saveFeature"   title="Завершить редактирование" layerID="' + layerID + '">S</span>' +
-		'<span collection="circles" class="editFeature"   title="Редактировать объект" layerID="' + layerID + '">E</span>' +
-		'<span collection="circles" class="deleteFeature" title="Удалить объект" layerID="' + layerID + '">D</span>' +
-		'</div>';
+function returnMarkerItem(mode, layerID, options, active){
+	console.log(mode)
+	var icons = {
+		markers   : "bullet_red.png",
+		polylines : "layer-shape-polyline.png",
+		polygons  : "layer-shape-polygon.png",
+		circles   : "layer-shape-ellipse.png",
 	}
+	return '<div class="markerItem' + active + '" collection="' + mode + '" layerID="' + layerID + '">' +
+		'<img src="' + imageFolder + icons[mode] + '"> #' + layerID + " " +
+		'<input type="text" collection="' + mode + '" layerID="' + layerID + '" class="featureName" value="' + ((options.name === undefined) ? emptyName : options.name) + '">' +
+		'<span collection="' + mode + '" class="saveFeature"   title="Завершить редактирование" layerID="' + layerID + '">S</span>' +
+		((mode == "marker")
+			? ''
+			:'<span collection="' + mode + '" class="editFeature"   title="Редактировать объект" layerID="' + layerID + '">E</span>') +
+		'<span collection="' + mode + '" class="deleteFeature" title="Удалить объект" layerID="' + layerID + '">D</span>' +
+		'</div>';
 }
 
 function countPoints() {
-	$(".markers, .polylines, .polygons, .circles").empty();
-	collection.markers.eachLayer(function(item) {
-		var layerID = collection.markers.getLayerId(item);
-		string = getMenuItem.marker( layerID, item.options );
-		$(".markers").append( string );
-	});
-	collection.polylines.eachLayer(function(item) {
-		var layerID = collection.polylines.getLayerId(item),
-			active  = (layerID == polylineID) ? " active" : "";
-		string = getMenuItem.polyline( layerID, item.options, active );
-		$(".polylines").append( string );
-	});
-	collection.polygons.eachLayer(function(item) {
-		var layerID = collection.polygons.getLayerId(item),
-			active  = (layerID == polygonID) ? " active" : "";
-		string = getMenuItem.polygon( layerID, item.options, active );
-		$(".polygons").append( string );
-	});
-	collection.circles.eachLayer(function(item) {
-		var layerID = collection.circles.getLayerId(item),
-			active  = (layerID == circleID) ? " active" : "";
-		string = getMenuItem.circle( layerID, item.options, active );
-		$(".circles").append( string );
-	});
+	var list = ["markers", "polylines", "polygons", "circles"];
+	$("." + list.join(", .")).empty();
+	for (a in list ) {
+		collection[list[a]].eachLayer(function(item) {
+			var layerID = collection[list[a]].getLayerId(item);
+			active  = (layerID == polylineID) ? " active" : ""; //???????????? как определить активную фичу!
+			string = returnMarkerItem(list[a], layerID, item.options, active);
+			$("." + list[a]).append( string );
+		});
+	}
 	setMarkerItemClickEvent();
 	setEditEvent();
 	setDeleteEvent();
