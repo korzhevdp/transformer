@@ -12,14 +12,20 @@ var dataFileName          = "mapcontent.geojson",
 	maxZoom               = 2,
 	magneticDeviation     = 3, //-11.5189,
 	zoomCoef              = ( maxZoom > 1 ) ? Math.pow( 2, maxZoom - 2 ) : 1,
-	redDot                = new L.icon({ iconUrl: imageFolder + 'bullet_red.png'   , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]}),
-	whiteDot              = new L.icon({ iconUrl: imageFolder + 'bullet_white.png' , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]}),
-	yellowDot             = new L.icon({ iconUrl: imageFolder + 'bullet_yellow.png', iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]}),
-	blueDot               = new L.icon({ iconUrl: imageFolder + 'bullet_blue.png'  , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]}),
-	//blueFlag            = L.icon({ iconUrl: imageFolder + 'flag_2.png'       , iconSize: [16, 16], iconAnchor: [0, 16],popupAnchor: [0, 16]}),
-	//redFlag             = L.icon({ iconUrl: imageFolder + 'flag_3.png'       , iconSize: [16, 16], iconAnchor: [0, 16],popupAnchor: [0, 16]}),
-	blueFlag              = new L.icon({ iconUrl: imageFolder + 'pin_149059.png'   , iconSize: [32, 32], iconAnchor: [16, 32],popupAnchor: [16, 32]}),
-	redFlag               = new L.icon({ iconUrl: imageFolder + 'pin_660624.png'   , iconSize: [32, 32], iconAnchor: [16, 32],popupAnchor: [16, 32]}),
+	iconProperties        = {
+		redDot    : { iconUrl: imageFolder + 'bullet_red.png'   , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]},
+		whiteDot  : { iconUrl: imageFolder + 'bullet_white.png' , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]},
+		yellowDot : { iconUrl: imageFolder + 'bullet_yellow.png', iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]},
+		blueDot   : { iconUrl: imageFolder + 'bullet_blue.png'  , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]},
+		blueFlag  : { iconUrl: imageFolder + 'pin_149059.png'   , iconSize: [32, 32], iconAnchor: [16, 32],popupAnchor: [16, 32]},
+		redFlag   : { iconUrl: imageFolder + 'pin_660624.png'   , iconSize: [32, 32], iconAnchor: [16, 32],popupAnchor: [16, 32]},
+	},
+	redDot                = new L.Icon(iconProperties.redDot),
+	whiteDot              = new L.Icon(iconProperties.whiteDot),
+	yellowDot             = new L.Icon(iconProperties.yellowDot),
+	blueDot               = new L.Icon(iconProperties.blueDot),
+	blueFlag              = new L.Icon(iconProperties.blueFlag),
+	redFlag               = new L.Icon(iconProperties.redFlag),
 	rulerStyle            = { weight: 4, color: '#ff3300', opacity: 1 },
 	azimuthStyle          = { weight: 4, color: '#0066cc', opacity: 1 },
 	polylineStyle         = { weight: 3, color: '#FF5555', opacity: .9, interactive: false },
@@ -154,19 +160,22 @@ function getTargetPoint ( latlng, heading, distance ) {
 	return { lat: lat2 * radInv, lng: lon2 };
 }
 
+function setAnchorCoordinates(coordinates) {
+	$(".anchorPoint").html( coordinates.x.toFixed(0) + ", " + coordinates.y.toFixed(0) );
+}
+
 function addAnchorPointNodes( point, sourceMap ) {
 	if ( sourceMap == "LMapsID" ) {
 		collection.anchorPoint.clearLayers();
-		anchorPoint = unprojectToXY( point );
-		marker      = new L.Marker( point, { icon: redFlag, draggable: true } )
+		marker          = new L.Marker( point, { icon: redFlag, draggable: true } )
 		.on('dragend', function(event) {
-			coordinates = unprojectToXY( event.target.getLatLng() );
-			$(".anchorPoint").html( coordinates.x.toFixed(0) + ", " + coordinates.y.toFixed(0) );
-			anchorPoint = coordinates;
+			anchorPoint = unprojectToXY( event.target.getLatLng() );
+			setAnchorCoordinates(anchorPoint);
 		})
 		.addTo(collection.anchorPoint);
-		anchorPointID = collection.anchorPoint.getLayerId(marker);
-		$(".anchorPoint").html( anchorPoint.x.toFixed(0) + ", " + anchorPoint.y.toFixed(0) );
+		anchorPointID   = collection.anchorPoint.getLayerId(marker);
+		anchorPoint     = unprojectToXY( point );
+		setAnchorCoordinates(anchorPoint)
 	}
 	if ( sourceMap == "LMapsID2" ) {
 		collection.anchorPointProj.clearLayers();
