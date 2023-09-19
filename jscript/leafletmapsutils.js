@@ -106,10 +106,10 @@ var dataFileName          = "mapcontent.geojson",
 			addMarker(e.latlng);
 		},
 		polylines         : function(e) {
-			addPolylineNode(e.latlng);
+			addAuxNode(e.latlng, "polylines");
 		},
 		polygons          : function(e) {
-			addPolygonNode(e.latlng);
+			addAuxNode(e.latlng, "polygons");
 		},
 		circles           : function(e) {
 			if ( circleID ) {
@@ -321,61 +321,44 @@ function addAzimuthNode( latlng ) {
 	redrawDrawings();
 }
 
-function addPolylineNode( latlng ) {
-	var polylineMarker,
+function addAuxNode( latlng, type ) {
+	var types = {
+			"polylines" : yellowDot,
+			"polygons"  : blueDot
+		}
 		order          = collection.aux.getLayers().length.toString(),
-		clickPointXY   = unprojectToXY(latlng);
-	polylineMarker     = new L.Marker(latlng, { icon: yellowDot, locals : clickPointXY, order : order, draggable: true })
-	.on("dragend", function(){
-		redrawDrawings();
-	})
-	.bindTooltip(order + " " + clickPointXY.x + ", " + clickPointXY.y, {permanent: false})
-	.addTo(collection.aux);
+		clickPointXY   = unprojectToXY(latlng),
+		polylineMarker = new L.Marker(latlng, { icon: types[type], locals : clickPointXY, order : order, draggable: true })
+		.on("dragend", function(){
+			redrawDrawings();
+		})
+		.bindTooltip(order + " " + clickPointXY.x + ", " + clickPointXY.y, {permanent: false})
+		.addTo(collection.aux);
 	redrawDrawings();
 }
 
-function addPolygonNode( latlng ) {
-	var polygonMarker,
-		order          = collection.aux.getLayers().length.toString(),
-		clickPointXY   = unprojectToXY(latlng);
-	polygonMarker      = new L.Marker(latlng, { icon: blueDot, locals : clickPointXY, order : order, draggable: true })
-	.on("dragend", function(){
+function makeCircleMarker(center, locals, type) {
+	new L.Marker(center, { icon: blueDot, locals : locals, draggable: true, type : type })
+	.on("dragend", function(event) {
+		dragXY   = unprojectToXY(event.target.getLatLng());
+		event.target.setTooltipContent("type: " + type + " " + dragXY.x + ", " + dragXY.y);
 		redrawDrawings();
 	})
-	.bindTooltip(order + " " + clickPointXY.x + ", " + clickPointXY.y, {permanent: false})
+	.bindTooltip("type: " + type + " " + locals.x + ", " + locals.y, {permanent: false, direction : (type === "c") ? "left" : "right"})
 	.addTo(collection.aux);
-	redrawDrawings();
 }
 
 function addCircle( latlng, radius ) {
-	var radialLatLng,
-		centerMarker,
-		radiusMarker,
-		clickPointXY = unprojectToXY(latlng),
+	var clickPointXY = unprojectToXY(latlng),
 		radialXY     = (radius === undefined)
 			? { x : clickPointXY.x + 350, y : clickPointXY.y }
 			: unprojectToXY({ lat : latlng.lat, lng : latlng.lng  + radius }),
 		radialLatLng = (radius === undefined)
 			? projectFromXY(radialXY)
-			: { lat : latlng.lat, lng : latlng.lng + radius };
+			: { lat : latlng.lat, lng : latlng.lng + radius },
+		centerMarker = makeCircleMarker(latlng,       clickPointXY, "c");
+		radiusMarker = makeCircleMarker(radialLatLng, radialXY,     "r");
 
-	centerMarker = new L.Marker(latlng,     { icon: blueDot, locals : clickPointXY, draggable: true, type : "c" })
-	.on("dragend", function(event) {
-		dragXY   = unprojectToXY(event.target.getLatLng());
-		event.target.setTooltipContent("type: c " + dragXY.x + ", " + dragXY.y);
-		redrawDrawings();
-	})
-	.bindTooltip("type: c " + clickPointXY.x + ", " + clickPointXY.y, {permanent: false, direction : "left"})
-	.addTo(collection.aux);
-
-	radiusMarker = new L.Marker(radialLatLng, { icon: blueDot, locals : radialXY, draggable: true, type : "r" })
-	.on("dragend", function(event) {
-		dragXY   = unprojectToXY(event.target.getLatLng());
-		event.target.setTooltipContent("type: r " + dragXY.x + ", " + dragXY.y);
-		redrawDrawings();
-	})
-	.bindTooltip("type: r " + radialXY.x + ", " + radialXY.y, {permanent: false, direction : "right"})
-	.addTo(collection.aux),
 	redrawDrawings();
 }
 
@@ -495,14 +478,14 @@ function setEditEvent() {
 			polylineID     = layerID;
 			coords         = feature.getLatLngs();
 			for ( a in coords ) {
-				addPolylineNode(coords[a]);
+				addAuxNode(coords[a], collectionName);
 			}
 		}
 		if (collectionName == "polygons") {
 			polygonID      = layerID;
 			coords         = feature.getLatLngs();
 			for ( a in coords[0] ) {
-				addPolylineNode(coords[0][a]);
+				addAuxNode(coords[0][a], collectionName);
 			}
 		}
 		if (collectionName == "circles") {
@@ -533,6 +516,13 @@ function setSaveEvent() {
 	});
 }
 
+function fillFromCollection(item, targetFeature) {
+	item.options.locals      = unprojectToXY(item.getLatLng());
+	item.setTooltipContent( item.options.locals.x + "x" + item.options.locals.y );
+	targetFeature.addLatLng( item.getLatLng() );
+	targetFeature.options.locals.push([ item.options.locals.x, item.options.locals.y ]);
+}
+
 function redrawDrawings() {
 	collection.info.clearLayers();
 	if ( workMode == "polylines" ) {
@@ -541,21 +531,18 @@ function redrawDrawings() {
 			.setStyle(polylineStyle)
 			.on("popupopen", function(){
 				setSaveEvent();
-			}).addTo(collection.polylines);
-			polylineID = collection.polylines.getLayerId(polyline);
-			polyline.bindPopup(getForm("polylines", polylineID, polyline));
+			}).addTo(collection[workMode]);
+			polylineID = collection[workMode].getLayerId(polyline);
+			polyline.bindPopup(getForm(workMode, polylineID, polyline));
 		}
-		polyline                 = collection.polylines.getLayer(polylineID);
+		polyline                 = collection[workMode].getLayer(polylineID);
 		polyline.options.locals  = [];
 		polyline.options.layerID = polylineID;
 		polyline.setLatLngs([]);
-		polyline.bindPopup(getForm("polylines", polylineID, polyline));
+		polyline.bindPopup(getForm(workMode, polylineID, polyline));
 
 		collection.aux.eachLayer( function(item) {
-			item.options.locals = unprojectToXY(item.getLatLng());
-			item.setTooltipContent(item.options.order + " " + item.options.locals.x + ", " + item.options.locals.y);
-			polyline.addLatLng(item.getLatLng());
-			polyline.options.locals.push([ item.options.locals.x, item.options.locals.y ]);
+			fillFromCollection( item, polyline );
 		});
 		placeInfo(polyline.options.locals, polyline.options.geometryType);
 		//console.log(polyline.options);
@@ -566,15 +553,15 @@ function redrawDrawings() {
 			.setStyle(polygonStyle)
 			.on("popupopen", function(){
 				setSaveEvent();
-			}).addTo(collection.polygons);
-			polygonID = collection.polygons.getLayerId(polygon);
-			polygon.bindPopup(getForm("polygons", polygonID, polygon));
+			}).addTo(collection[workMode]);
+			polygonID = collection[workMode].getLayerId(polygon);
+			polygon.bindPopup(getForm(workMode, polygonID, polygon));
 		}
-		polygon                 = collection.polygons.getLayer(polygonID);
+		polygon                 = collection[workMode].getLayer(polygonID);
 		polygon.options.locals  = [[]];
 		polygon.options.layerID = polygonID;
 		polygon.setLatLngs([]);
-		polygon.bindPopup(getForm("polygons", polygonID, polygon));
+		polygon.bindPopup(getForm(workMode, polygonID, polygon));
 
 		collection.aux.eachLayer(function(item) {
 			item.options.locals = unprojectToXY(item.getLatLng());
@@ -610,60 +597,58 @@ function redrawDrawings() {
 			.on("popupopen", function() {
 				setSaveEvent();
 			})
-			.addTo(collection.circles);
-			circleID               = collection.circles.getLayerId(circle);
+			.addTo(collection[workMode]);
+			circleID               = collection[workMode].getLayerId(circle);
 			circle.options.layerID = circleID;
-			circle.bindPopup(getForm("circles", circleID, circle))
+			circle.bindPopup(getForm(workMode, circleID, circle))
 		}
-		circle                = collection.circles.getLayer(circleID);
+		circle                = collection[workMode].getLayer(circleID);
 		circle.options.radius = radius;
 		circle.options.locals = [ centerXY.x, centerXY.y, radialXY.x, radialXY.y ];
 		circle.setLatLng(aPoint);
 		circle.setRadius(radius);
-		circle.bindPopup(getForm("circles", circleID, circle));
+		circle.bindPopup(getForm(workMode, circleID, circle));
 	}
 	if ( workMode == "rulers"    ) {
 		if (techMode == "scaleRuler") {
 			if ( !scaleRulerID ) {
-				scaleRuler   = new L.polyline([], { locals: [], geometryType: "LineString", type : "scaleRuler", name: "scaleRuler" })
+				scaleRuler   = new L.polyline([], { locals: [], geometryType: "LineString", type : techMode, name: techMode })
 				.setStyle(rulerStyle)
-				.addTo(collection.rulers);
-				scaleRulerID = collection.rulers.getLayerId(scaleRuler);
+				.addTo(collection[workMode]);
+				scaleRulerID = collection[workMode].getLayerId(scaleRuler);
 			}
-			scaleRuler                = collection.rulers.getLayer(scaleRulerID);
+			scaleRuler                = collection[workMode].getLayer(scaleRulerID);
 			scaleRuler.options.locals = [];
-			scaleRuler.setLatLngs([]);
-			collection.scaleRuler.eachLayer( function(item) {
-				item.options.locals   = unprojectToXY(item.getLatLng());
-				item.setTooltipContent(item.options.locals.x + "x" + item.options.locals.y);
-				scaleRuler.addLatLng(item.getLatLng());
-				scaleRuler.options.locals.push([ item.options.locals.x, item.options.locals.y ]);
+			scaleRuler.setLatLngs( [] );
+			collection.scaleRuler.eachLayer( function( item ) {
+				item.options.locals   = unprojectToXY( item.getLatLng() );
+				item.setTooltipContent( item.options.locals.x + "x" + item.options.locals.y );
+				scaleRuler.addLatLng( item.getLatLng() );
+				scaleRuler.options.locals.push( [ item.options.locals.x, item.options.locals.y ] );
 			});
 			if ( scaleRuler.options.locals[1] === undefined ) {
 				return false;
 			}
 			scaleRulerPixelLength = Math.round(
 				Math.sqrt(
-					Math.pow(scaleRuler.options.locals[0][0] - scaleRuler.options.locals[1][0], 2) + Math.pow(scaleRuler.options.locals[0][1] - scaleRuler.options.locals[1][1], 2)
+					Math.pow( scaleRuler.options.locals[0][0] - scaleRuler.options.locals[1][0], 2 ) + Math.pow( scaleRuler.options.locals[0][1] - scaleRuler.options.locals[1][1], 2 )
 				)
 			);
 			$(".scaleRulerPixelLength").val(scaleRulerPixelLength);
 		}
 		if ( techMode == "azimuth" ) {
 			if ( !azimuthVectorID ) {
-				azimuthVector = new L.polyline([], { locals: [], geometryType: "LineString", type : "azimuthVector", name: "azimuthVector" })
+				azimuthVector = new L.polyline([], { locals: [], geometryType: "LineString", type : techMode, name: techMode })
 				.setStyle(azimuthStyle)
-				.addTo(collection.rulers);
-				azimuthVectorID = collection.rulers.getLayerId(azimuthVector);
+				.addTo(collection[workMode]);
+				azimuthVectorID = collection[workMode].getLayerId(azimuthVector);
 			}
-			azimuthVector                = collection.rulers.getLayer(azimuthVectorID);
+			azimuthVector                = collection[workMode].getLayer(azimuthVectorID);
 			azimuthVector.options.locals = [];
 			azimuthVector.setLatLngs([]);
+
 			collection.azimuth.eachLayer( function(item) {
-				item.options.locals      = unprojectToXY(item.getLatLng());
-				item.setTooltipContent(item.options.type + " >> " + item.options.locals.x + "x" + item.options.locals.y);
-				azimuthVector.addLatLng(item.getLatLng());
-				azimuthVector.options.locals.push([ item.options.locals.x, item.options.locals.y ]);
+				fillFromCollection( item, azimuthVector )
 			});
 			if ( azimuthVector.options.locals[1] === undefined ) {
 				return false;
@@ -1023,7 +1008,7 @@ $(".openMapLoader").click(function() {
 		dataType      : "json",
 		success       : function(data) {
 			$(".schemaList").empty();
-			makeFileList(data, className);
+			makeFileList(data, "loadMap");
 			$(".mapfiles").removeClass("hide");
 			$(".loadMap").unbind().click(function() {
 				var dataFile = ($(this).attr("filename") === undefined) ? dataFileName : $(this).attr("filename");
@@ -1051,7 +1036,7 @@ $(".openMapSaver").click(function() {
 		dataType      : "json",
 		success       : function(data) {
 			$(".schemaList").empty();
-			makeFileList(data, className);
+			makeFileList(data, "saveMe");
 			$(".saveMe").click(function(){
 				$("#saveFilename").val($(this).attr("filename"));
 			});
