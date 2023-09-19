@@ -492,12 +492,19 @@ function setSaveEvent() {
 	});
 }
 
-function fillFromCollection(item, targetFeature) {
+function fillFromCollection( item, targetFeature ) {
 	item.options.locals      = unprojectToXY(item.getLatLng());
 	item.setTooltipContent( item.options.locals.x + "x" + item.options.locals.y );
 	targetFeature.addLatLng( item.getLatLng() );
 	targetFeature.options.locals.push([ item.options.locals.x, item.options.locals.y ]);
 }
+
+function createRuler( workmode, techmode ) {
+	return new L.polyline([], { locals: [], geometryType: "LineString", type : techMode, name: techMode })
+		.setStyle((techMode == "azimuth") ? azimuthStyle : rulerStyle) 
+		.addTo(collection[workMode]);
+}
+
 
 function redrawDrawings() {
 	collection.info.clearLayers();
@@ -588,35 +595,24 @@ function redrawDrawings() {
 	if ( workMode == "rulers"    ) {
 		if (techMode == "scaleRuler") {
 			if ( !scaleRulerID ) {
-				scaleRuler   = new L.polyline([], { locals: [], geometryType: "LineString", type : techMode, name: techMode })
-				.setStyle(rulerStyle)
-				.addTo(collection[workMode]);
+				scaleRuler   = createRuler( workMode, techMode );
 				scaleRulerID = collection[workMode].getLayerId(scaleRuler);
 			}
 			scaleRuler                = collection[workMode].getLayer(scaleRulerID);
 			scaleRuler.options.locals = [];
 			scaleRuler.setLatLngs( [] );
 			collection.scaleRuler.eachLayer( function( item ) {
-				item.options.locals   = unprojectToXY( item.getLatLng() );
-				item.setTooltipContent( item.options.locals.x + "x" + item.options.locals.y );
-				scaleRuler.addLatLng( item.getLatLng() );
-				scaleRuler.options.locals.push( [ item.options.locals.x, item.options.locals.y ] );
+				fillFromCollection( item, scaleRuler );
 			});
 			if ( scaleRuler.options.locals[1] === undefined ) {
 				return false;
 			}
-			scaleRulerPixelLength = Math.round(
-				Math.sqrt(
-					Math.pow( scaleRuler.options.locals[0][0] - scaleRuler.options.locals[1][0], 2 ) + Math.pow( scaleRuler.options.locals[0][1] - scaleRuler.options.locals[1][1], 2 )
-				)
-			);
-			$(".scaleRulerPixelLength").val(scaleRulerPixelLength);
+			exposeScaleRulerParameters(scaleRuler.options.locals);
 		}
+
 		if ( techMode == "azimuth" ) {
 			if ( !azimuthVectorID ) {
-				azimuthVector = new L.polyline([], { locals: [], geometryType: "LineString", type : techMode, name: techMode })
-				.setStyle(azimuthStyle)
-				.addTo(collection[workMode]);
+				azimuthVector = createRuler(workMode, techMode);
 				azimuthVectorID = collection[workMode].getLayerId(azimuthVector);
 			}
 			azimuthVector                = collection[workMode].getLayer(azimuthVectorID);
@@ -653,6 +649,11 @@ function redrawDrawings() {
 function getForm( collection, layerID, item ) {
 	var name = (item.options.name === undefined) ? '' : item.options.name;
 	return 'Название: ' + name;
+}
+
+function exposeScaleRulerParameters( locals ) {
+	scaleRulerPixelLength = Math.round( Math.sqrt( Math.pow( locals[0][0] - locals[1][0], 2 ) + Math.pow( locals[0][1] - locals[1][1], 2 ) ) );
+	$(".scaleRulerPixelLength").val(scaleRulerPixelLength);
 }
 
 function setMarkerItemClickEvent() {
