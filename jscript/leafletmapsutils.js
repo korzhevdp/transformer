@@ -1,18 +1,18 @@
 $(".main").height( $(window).height() + 'px' );
 
-var dataFileName          = "mapcontent.geojson",
-	emptyName             = " -- ",
-	workMode              = "markers",
-	techMode              = "scaleRuler",
-	units                 = "m",
-	scaleReference        = 0,
-	scaleRulerPixelLength = 0,
-	bearing               = 0,
-	deviation             = 0,
-	maxZoom               = 2,
-	magneticDeviation     = 3, //-11.5189,
-	zoomCoef              = ( maxZoom > 1 ) ? Math.pow( 2, maxZoom - 2 ) : 1,
-	iconProperties        = {
+var dataFileName           = "mapcontent.geojson",
+	emptyName              = " -- ",
+	workMode               = "markers",
+	techMode               = "scaleRuler",
+	units                  = "m",
+	scaleReference         = 0,
+	scaleRulerPixelLength  = 0,
+	bearing                = 0,
+	deviation              = 0,
+	maxZoom                = 2,
+	magneticDeviation      = 3, //-11.5189,
+	zoomCoef               = ( maxZoom > 1 ) ? Math.pow( 2, maxZoom - 2 ) : 1,
+	iconProperties         = {
 		redDot    : { iconUrl: imageFolder + 'bullet_red.png'   , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]},
 		whiteDot  : { iconUrl: imageFolder + 'bullet_white.png' , iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]},
 		yellowDot : { iconUrl: imageFolder + 'bullet_yellow.png', iconSize: [16, 16], iconAnchor: [8, 8],popupAnchor: [0, 0]},
@@ -20,18 +20,22 @@ var dataFileName          = "mapcontent.geojson",
 		blueFlag  : { iconUrl: imageFolder + 'pin_149059.png'   , iconSize: [32, 32], iconAnchor: [16, 32],popupAnchor: [16, 32]},
 		redFlag   : { iconUrl: imageFolder + 'pin_660624.png'   , iconSize: [32, 32], iconAnchor: [16, 32],popupAnchor: [16, 32]},
 	},
-	redDot                = new L.Icon(iconProperties.redDot),
-	whiteDot              = new L.Icon(iconProperties.whiteDot),
-	yellowDot             = new L.Icon(iconProperties.yellowDot),
-	blueDot               = new L.Icon(iconProperties.blueDot),
-	blueFlag              = new L.Icon(iconProperties.blueFlag),
-	redFlag               = new L.Icon(iconProperties.redFlag),
-	rulerStyle            = { weight: 4, color: '#ff3300', opacity: 1 },
-	azimuthStyle          = { weight: 4, color: '#0066cc', opacity: 1 },
-	polylineStyle         = { weight: 3, color: '#FF5555', opacity: .9, interactive: false },
-	polygonStyle          = { weight: 3, color: '#333366', opacity: .9, fill: true, fillOpacity: .05, interactive: false },
-	circleStyle           = { weight: 3, color: '#00ff00', opacity: .9, fill: true, fillOpacity: .05 },
-	unitsCollection       = {
+	redDot                 = new L.Icon(iconProperties.redDot),
+	whiteDot               = new L.Icon(iconProperties.whiteDot),
+	yellowDot              = new L.Icon(iconProperties.yellowDot),
+	blueDot                = new L.Icon(iconProperties.blueDot),
+	blueFlag               = new L.Icon(iconProperties.blueFlag),
+	redFlag                = new L.Icon(iconProperties.redFlag),
+	rulerStyle             = { weight: 4, color: '#ff3300', opacity: 1 },
+	azimuthStyle           = { weight: 4, color: '#0066cc', opacity: 1 },
+	polylineStyle          = { weight: 3, color: '#FF5555', opacity: .9, interactive: false },
+	polygonStyle           = { weight: 3, color: '#333366', opacity: .9, fill: true, fillOpacity: .05, interactive: false },
+	circleStyle            = { weight: 3, color: '#00ff00', opacity: .9, fill: true, fillOpacity: .05 },
+	projectedPolygonStyle  = { weight: 3, color: "#00bb00", fillColor: "#eeeeee", fillOpacity: 0.1, geometryType: "Polygon" },
+	projectedCircleStyle   = { weight: 3, color: "#ff9900", fillColor: "#ffff99", fillOpacity: 0.1, geometryType: "Circle" },
+	projectedPolylineStyle = { weight: 3, color: "#3333ff", geometryType: "LineString" },
+	projectedPointStyle    = { icon: blueDot, geometryType: "Point" },
+	unitsCollection        = {
 		m   : "м.",
 		sag : "саж.",
 		yds : "ярд",
@@ -39,7 +43,7 @@ var dataFileName          = "mapcontent.geojson",
 		nm  : "м.м",
 		mi  : "с.м"
 	},
-	unitsMultiplier       = {
+	unitsMultiplier        = {
 		m   : 1,
 		sag : 2.13,
 		yds : .97,
@@ -47,12 +51,12 @@ var dataFileName          = "mapcontent.geojson",
 		nm  : 1852,
 		mi  : 1609
 	},
-	map                   = L.map('LMapsID', {
-		zoom              : -3,
-		maxZoom           :  maxZoom,
-		minZoom           : -6,
-		center            : L.latLng( [0, 0] ),
-		crs               : L.CRS.Simple,
+	map                    = L.map('LMapsID', {
+		zoom               : -3,
+		maxZoom            :  maxZoom,
+		minZoom            : -6,
+		center             : L.latLng( [0, 0] ),
+		crs                : L.CRS.Simple,
 	})
 	.on('contextmenu', function( e ) {
 		console.log( e.latlng.lat, e.latlng.lng );
@@ -61,12 +65,12 @@ var dataFileName          = "mapcontent.geojson",
 		actions[workMode]( e );
 		countPoints();
 	}),
-	map2                  = L.map('LMapsID2', {
-		zoom              : 16,
-		maxZoom           : 18,
-		minZoom           : 4,
-		center            : L.latLng( [64.54106203533401,40.52993774414063] ),
-		crs               : L.CRS.EPSG3857,
+	map2                   = L.map('LMapsID2', {
+		zoom               : 16,
+		maxZoom            : 18,
+		minZoom            : 4,
+		center             : L.latLng( [64.54106203533401,40.52993774414063] ),
+		crs                : L.CRS.EPSG3857,
 	})
 	.on('contextmenu', function( e ) {
 		console.log( e.latlng.lat, e.latlng.lng );
@@ -76,63 +80,63 @@ var dataFileName          = "mapcontent.geojson",
 			actions[workMode]( e );
 		}
 	}),
-	anchorPointProj       = false,
-	anchorPoint           = false,
-	markerID              = false,
-	polylineID            = false,
-	polygonID             = false,
-	circleID              = false,
-	scaleRulerID          = false,
-	azimuthVectorID       = false,
-	anchorPointID         = false,
-	anchorPointProjID     = false,
-	circleID              = false,
-	collection            = {
-		markers           : new L.FeatureGroup().addTo( map ),
-		polylines         : new L.FeatureGroup().addTo( map ),
-		polygons          : new L.FeatureGroup().addTo( map ),
-		circles           : new L.FeatureGroup().addTo( map ),
-		aux               : new L.FeatureGroup().addTo( map ),
-		rulers            : new L.FeatureGroup().addTo( map ),
-		scaleRuler        : new L.FeatureGroup().addTo( map ),
-		azimuth           : new L.FeatureGroup().addTo( map ),
-		info              : new L.FeatureGroup().addTo( map ),
-		anchorPoint       : new L.FeatureGroup().addTo( map ),
-		anchorPointProj   : new L.FeatureGroup().addTo( map2 ),
-		projected         : new L.FeatureGroup().addTo( map2 ),
+	anchorPointProj        = false,
+	anchorPoint            = false,
+	markerID               = false,
+	polylineID             = false,
+	polygonID              = false,
+	circleID               = false,
+	scaleRulerID           = false,
+	azimuthID        = false,
+	anchorPointID          = false,
+	anchorPointProjID      = false,
+	circleID               = false,
+	collection             = {
+		markers            : new L.FeatureGroup().addTo( map ),
+		polylines          : new L.FeatureGroup().addTo( map ),
+		polygons           : new L.FeatureGroup().addTo( map ),
+		circles            : new L.FeatureGroup().addTo( map ),
+		aux                : new L.FeatureGroup().addTo( map ),
+		rulers             : new L.FeatureGroup().addTo( map ),
+		scaleRuler         : new L.FeatureGroup().addTo( map ),
+		azimuth            : new L.FeatureGroup().addTo( map ),
+		info               : new L.FeatureGroup().addTo( map ),
+		anchorPoint        : new L.FeatureGroup().addTo( map ),
+		anchorPointProj    : new L.FeatureGroup().addTo( map2 ),
+		projected          : new L.FeatureGroup().addTo( map2 ),
 	},
-	southWest             = map.unproject( [0, imgNativeHeight], map.getMaxZoom() - 1 ),
-	northEast             = map.unproject( [imgNativeWidth, 0],  map.getMaxZoom() - 1 ),
-	bounds                = new L.LatLngBounds(southWest, northEast),
-	osm                   = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	southWest              = map.unproject( [0, imgNativeHeight], map.getMaxZoom() - 1 ),
+	northEast              = map.unproject( [imgNativeWidth, 0],  map.getMaxZoom() - 1 ),
+	bounds                 = new L.LatLngBounds(southWest, northEast),
+	osm                    = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">Участники OpenStreetMap</a>'
 	}),
-	actions               = {
-		markers           : function(e) {
+	actions                = {
+		markers            : function(e) {
 			addMarker(e.latlng);
 		},
-		polylines         : function(e) {
+		polylines          : function(e) {
 			addAuxNode(e.latlng, "polylines");
 		},
-		polygons          : function(e) {
+		polygons           : function(e) {
 			addAuxNode(e.latlng, "polygons");
 		},
-		circles           : function(e) {
+		circles            : function(e) {
 			if ( circleID ) {
 				return false;
 			}
 			addCircle(e.latlng);
 		},
-		rulers            : function(e) {
-			if (techMode == "scaleRuler") {
+		rulers             : function(e) {
+			if ( techMode == "scaleRuler" ) {
 				addRulerNode(e.latlng);
 				return true;
 			}
-			if (techMode == "azimuth") {
+			if ( techMode == "azimuth" ) {
 				addAzimuthNode(e.latlng);
 				return true;
 			}
-			if (techMode == "anchorPoint") {
+			if ( techMode == "anchorPoint" ) {
 				addAnchorPointNodes(e.latlng, e.target._container.id);
 				return true;
 			}
@@ -163,11 +167,14 @@ function getTargetPoint ( latlng, heading, distance ) {
 function setAnchorCoordinates(coordinates) {
 	$(".anchorPoint").html( coordinates.x.toFixed(0) + ", " + coordinates.y.toFixed(0) );
 }
+function setAnchorProjCoordinates(coordinates) {
+	$(".anchorPointProj").html( parseFloat(coordinates.lat).toFixed(2) + "&hellip;, " + parseFloat(coordinates.lng).toFixed(2) + "&hellip;" );
+}
 
 function addAnchorPointNodes( point, sourceMap ) {
 	if ( sourceMap == "LMapsID" ) {
 		collection.anchorPoint.clearLayers();
-		marker          = new L.Marker( point, { icon: redFlag, draggable: true } )
+		marker          = new L.marker( point, { icon: redFlag, draggable: true } )
 		.on('dragend', function(event) {
 			anchorPoint = unprojectToXY( event.target.getLatLng() );
 			setAnchorCoordinates(anchorPoint);
@@ -180,15 +187,14 @@ function addAnchorPointNodes( point, sourceMap ) {
 	if ( sourceMap == "LMapsID2" ) {
 		collection.anchorPointProj.clearLayers();
 		anchorPointProj = { lat: point.lat, lng: point.lng };
-		marker          = new L.Marker(anchorPointProj, { icon: blueFlag, locals: anchorPointProj, draggable: true })
+		marker          = new L.marker(anchorPointProj, { icon: blueFlag, locals: anchorPointProj, draggable: true })
 		.on('dragend', function(event) {
-			coordinates = event.target.getLatLng();
-			$(".anchorPointProj").html( coordinates.lat.toFixed(2) + "&hellip;, " + coordinates.lng.toFixed(2) + "&hellip;" );
-			anchorPointProj = { lat: coordinates.lat, lng: coordinates.lng };
+			anchorPointProj = event.target.getLatLng();
+			setAnchorProjCoordinates(anchorPointProj);
 		})
 		.addTo(collection.anchorPointProj);
 		anchorPointProjID = collection.anchorPointProj.getLayerId(marker);
-		$(".anchorPointProj").html( parseFloat(anchorPointProj.lat).toFixed(2) + "&hellip;, " + parseFloat(anchorPointProj.lng).toFixed(2) + "&hellip;" )
+		setAnchorProjCoordinates(anchorPointProj);
 	}
 }
 
@@ -197,7 +203,7 @@ function addMarker( latlng ) {
 		clickPointXY   = unprojectToXY(latlng);
 		clickPointXY.x = Math.round(clickPointXY.x);
 		clickPointXY.y = Math.round(clickPointXY.y);
-	marker             = new L.Marker(latlng, { icon: redDot, locals : clickPointXY, geometryType: "Point", name: emptyName, draggable: true })
+	new L.marker(latlng, { icon: redDot, locals : clickPointXY, geometryType: "Point", name: emptyName, draggable: true })
 	.on('dragend', function(event) {
 		item                = event.target;
 		item.options.locals = unprojectToXY( item.getLatLng() );
@@ -228,7 +234,7 @@ function calculateProjectedPoint( clickPointXY ) {
 function reprojectXYPointToMap(clickPointXY, name) {
 	var projectedPoint	= calculateProjectedPoint( clickPointXY );
 
-	Wmarker = new L.Marker( projectedPoint, { icon: blueDot, geometryType: "Point" } )
+	new L.marker( projectedPoint, projectedPointStyle )
 	.bindTooltip( name, { permanent: true } )
 	.addTo( collection.projected );
 }
@@ -237,37 +243,32 @@ function reprojectXYLineToMap(locals, name) {
 	var geometry = [];
 	for ( a in locals ) {
 		clickPointXY = { x : locals[a][0] , y : locals[a][1] }
-		//console.log(geometry);
 		geometry.push( calculateProjectedPoint( clickPointXY ) );
 	}
-	//console.log(geometry);
-	Wmarker		= new L.Polyline(geometry, { color: "#3333ff" , weight: 3, geometryType: "LineString" })
+	new L.Polyline(geometry, projectedPolylineStyle)
 	.bindTooltip( name, {permanent: true} )
 	.addTo( collection.projected );
 }
 
 function reprojectXYPolygonToMap(locals, name) {
-	//console.log(locals);
-	//return true;
 	var geometry = [[]];
 	for ( a in locals[0] ) {
 		clickPointXY = { x : locals[0][a][0] , y : locals[0][a][1] }
 		geometry[0].push( calculateProjectedPoint( clickPointXY ) );
 	}
-	Wmarker		= new L.Polygon(geometry, { color: "#00bb00" , weight: 3, fillColor: "#eeeeee", fillOpacity: 0.1, geometryType: "Polygon" })
+	new L.Polygon(geometry, projectedPolygonStyle)
 	.bindTooltip( name, {permanent: true} )
 	.addTo( collection.projected );
 }
 
 function reprojectXYCircleToMap(locals, name) {
-	//console.log(locals);
-	//return true;
 	var center   = calculateProjectedPoint( { x : locals[0] , y : locals[1] } ),
 		radial   = calculateProjectedPoint( { x : locals[2] , y : locals[3] } ),
 		raduis   = L.CRS.EPSG3857.distance(center, radial);
 
-	Wmarker		 = new L.Circle(center, { radius: radius, color: "#ff9900" , weight: 3, fillColor: "#ffff99", fillOpacity: 0.1, geometryType: "Circle" })
-	.bindTooltip( name, {permanent: true} )
+	new L.circle(center, { radius: radius })
+	.setStyle( projectedCircleStyle )
+	.bindTooltip( name, { permanent: true } )
 	.addTo( collection.projected );
 }
 
@@ -286,7 +287,6 @@ function reprojectCollection() {
 			reprojectXYLineToMap(item.options.locals, item.options.name);
 		});
 	}
-	//console.log(collection.polygons.getLayers().length)
 	if ( collection.polygons.getLayers().length ) {
 		collection.polygons.eachLayer(function( item ) {
 			reprojectXYPolygonToMap(item.options.locals, item.options.name);
@@ -305,7 +305,7 @@ function addRulerNode( latlng ) {
 	}
 	var rulerMarker,
 		clickPointXY   = unprojectToXY(latlng);
-	rulerMarker        = new L.Marker(latlng, { icon: whiteDot, locals : clickPointXY, draggable: true })
+	rulerMarker        = new L.marker(latlng, { icon: whiteDot, locals : clickPointXY, draggable: true })
 	.on("dragend", function(){
 		redrawDrawings();
 	})
@@ -321,7 +321,7 @@ function addAzimuthNode( latlng ) {
 	var azimuthMarker,
 		type           = ( !collection.azimuth.getLayers().length ) ? "init" : "dest",
 		clickPointXY   = unprojectToXY(latlng);
-	azimuthMarker      = new L.Marker(latlng, { icon: whiteDot, locals : clickPointXY, type: type, draggable: true })
+	azimuthMarker      = new L.marker(latlng, { icon: whiteDot, locals : clickPointXY, type: type, draggable: true })
 	.on("dragend", function(){
 		redrawDrawings();
 	})
@@ -337,7 +337,7 @@ function addAuxNode( latlng, type ) {
 		}
 		order          = collection.aux.getLayers().length.toString(),
 		clickPointXY   = unprojectToXY(latlng),
-		polylineMarker = new L.Marker(latlng, { icon: types[type], locals : clickPointXY, order : order, draggable: true })
+		polylineMarker = new L.marker(latlng, { icon: types[type], locals : clickPointXY, order : order, draggable: true })
 		.on("dragend", function(){
 			redrawDrawings();
 		})
@@ -347,7 +347,7 @@ function addAuxNode( latlng, type ) {
 }
 
 function makeCircleMarker(center, locals, type) {
-	new L.Marker(center, { icon: blueDot, locals : locals, draggable: true, type : type })
+	new L.marker(center, { icon: blueDot, locals : locals, draggable: true, type : type })
 	.on("dragend", function(event) {
 		dragXY   = unprojectToXY(event.target.getLatLng());
 		event.target.setTooltipContent("type: " + type + " " + dragXY.x + ", " + dragXY.y);
@@ -445,7 +445,7 @@ function setDeleteEvent() {
 
 function setEditEvent() {
 	$(".editFeature").unbind().click(function() {
-		var collectionName = $(this).attr("collection"),
+		var collectionName = $(this).attr("collection");
 			layerID        = parseInt($(this).attr("layerID"), 10);
 		workMode           = collectionName;
 		collection.aux.clearLayers();
@@ -501,7 +501,7 @@ function fillFromCollection( item, targetFeature ) {
 
 function createRuler( workmode, techmode ) {
 	return new L.polyline([], { locals: [], geometryType: "LineString", type : techMode, name: techMode })
-		.setStyle((techMode == "azimuth") ? azimuthStyle : rulerStyle) 
+		.setStyle((techMode == "azimuth") ? azimuthStyle : rulerStyle)
 		.addTo(collection[workMode]);
 }
 
@@ -611,23 +611,23 @@ function redrawDrawings() {
 		}
 
 		if ( techMode == "azimuth" ) {
-			if ( !azimuthVectorID ) {
-				azimuthVector = createRuler(workMode, techMode);
-				azimuthVectorID = collection[workMode].getLayerId(azimuthVector);
+			if ( !azimuthID ) {
+				azimuth = createRuler(workMode, techMode);
+				azimuthID = collection[workMode].getLayerId(azimuth);
 			}
-			azimuthVector                = collection[workMode].getLayer(azimuthVectorID);
-			azimuthVector.options.locals = [];
-			azimuthVector.setLatLngs([]);
+			azimuth                = collection[workMode].getLayer(azimuthID);
+			azimuth.options.locals = [];
+			azimuth.setLatLngs([]);
 
 			collection.azimuth.eachLayer( function(item) {
-				fillFromCollection( item, azimuthVector )
+				fillFromCollection( item, azimuth )
 			});
-			if ( azimuthVector.options.locals[1] === undefined ) {
+			if ( azimuth.options.locals[1] === undefined ) {
 				return false;
 			}
 			deviation = Math.atan2(
-				(azimuthVector.options.locals[0][0] - azimuthVector.options.locals[1][0]) * -1,
-				(azimuthVector.options.locals[0][1] - azimuthVector.options.locals[1][1])
+				(azimuth.options.locals[0][0] - azimuth.options.locals[1][0]) * -1,
+				(azimuth.options.locals[0][1] - azimuth.options.locals[1][1])
 			) * 180 / Math.PI ;
 
 			deviation = Math.round(deviation * 100) / 100;
@@ -637,8 +637,8 @@ function redrawDrawings() {
 				: Math.round((360 + deviation) * 100) / 100;
 			//console.log(deviation, bearing);
 
-			$(".azimuthVectorBearing").html(bearing);
-			$(".azimuthVectorDeviation").html(deviation);
+			$(".azimuthBearing").html(bearing);
+			$(".azimuthDeviation").html(deviation);
 		}
 	}
 
@@ -711,52 +711,58 @@ function convertToGeoJSON( layerGroup ) {
 	return JSON.stringify(output);
 }
 
+function placeFeature()
+
 function convertFromGeoJSON( data ) {
 	for ( a in data.features ) {
 		feature = data.features[a];
-		if (feature.properties.type !== undefined && feature.properties.type == "scaleRuler") {
-			coordinates = feature.geometry.coordinates;
-			workMode    = "rulers";
-			techMode    = "scaleRuler";
-			for ( a in coordinates ) {
-				addRulerNode(coordinates[a]);
-			}
-			continue;
-		}
-		if (feature.properties.type !== undefined && feature.properties.type == "azimuthVector") {
-			coordinates = feature.geometry.coordinates;
-			workMode    = "rulers";
-			techMode    = "azimuth"
-			for ( a in coordinates ) {
-				addAzimuthNode(coordinates[a]);
-			}
-			continue;
-		}
+
 		if (feature.geometry.type == "Point") {
 			feature.properties.icon = new L.Icon(feature.properties.icon.options);
-			object = new L.Marker(feature.geometry.coordinates, feature.properties)
+			new L.marker(feature.geometry.coordinates, feature.properties)
 			.bindTooltip(feature.properties.name, {permanent: true})
 			.addTo(collection.markers);
+			continue;
 		}
 		if (feature.geometry.type == "LineString") {
-			object = new L.polyline(feature.geometry.coordinates, feature.properties)
+			new L.polyline(feature.geometry.coordinates, feature.properties)
 			.bindTooltip(feature.properties.name, {permanent: true})
 			.addTo(collection.polylines);
 			placeInfo(feature.properties.locals, feature.properties.geometryType);
+			continue;
 		}
 		if (feature.geometry.type == "Polygon") {
-			object = new L.polygon(feature.geometry.coordinates, feature.properties)
+			new L.polygon(feature.geometry.coordinates, feature.properties)
 			.bindTooltip(feature.properties.name, {permanent: true})
 			.addTo(collection.polygons);
 			placeInfo(feature.properties.locals[0], feature.properties.geometryType);
+			continue;
 		}
 		if (feature.geometry.type == "Circle") {
-			//console.log("circ");
-			object = new L.circle(feature.geometry.coordinates, feature.properties)
+			new L.circle(feature.geometry.coordinates, feature.properties)
 			.bindTooltip(feature.properties.name, {permanent: true})
 			.addTo(collection.circles);
-			//placeInfo(feature.properties.locals, feature.properties.geometryType);
+			continue;
 		}
+
+		workMode    = "rulers";
+		if ( feature.properties.type !== undefined ) {
+			coordinates = feature.geometry.coordinates;
+			techMode    = feature.properties.type;
+			if ( feature.properties.type == "scaleRuler") {
+				for ( a in coordinates ) {
+					addRulerNode(coordinates[a]);
+				}
+				continue;
+			}
+			if ( feature.properties.type == "azimuth" ) {
+				for ( a in coordinates ) {
+					addAzimuthNode(coordinates[a]);
+				}
+				continue;
+			}
+		}
+
 		reprojectCollection();
 	}
 }
@@ -970,7 +976,7 @@ $(".resetSR").click(function() {
 
 $(".resetAZ").click(function() {
 	techMode = "azimuth";
-	$(".azimuthVectorDeviation, .azimuthVectorBearing").empty();
+	$(".azimuthDeviation, .azimuthBearing").empty();
 	$(".azimuthMode, .rulerMode").removeClass("active");
 	$(".azimuthMode").addClass("active");
 	collection.azimuth.clearLayers();
